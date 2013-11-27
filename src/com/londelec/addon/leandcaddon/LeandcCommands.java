@@ -33,7 +33,7 @@ import javax.xml.transform.stream.StreamSource;
 /**
  * All addon commands, that can be chosen from menus.
  * 
- * @version 1.0.0
+ * @version 1.1.0
  * @author MP
  */
 public class LeandcCommands extends SpreadsheetDocHelper
@@ -77,7 +77,7 @@ public class LeandcCommands extends SpreadsheetDocHelper
             generateXmlDialog = new UnoDialog(mxContext, mxServiceManager);
             
             generateXmlDialog.initialize( new String[] {"Height", "Moveable", "Name", "PositionX", "PositionY", "Step", "TabIndex","Title","Width"},
-                new Object[] { new Integer(90), Boolean.TRUE, "GenerateXmlDialog", new Integer(102),new Integer(41), new Integer(0), new Short((short) 0), "Choose sheets to use for xml generation", new Integer(130)});
+                new Object[] { new Integer(110), Boolean.TRUE, "GenerateXmlDialog", new Integer(102),new Integer(41), new Integer(0), new Short((short) 0), "Choose sheets to use for xml generation", new Integer(130)});
             
             spreadsheetList = getAllSpreadsheetNames();
             activeSpreadsheetName = getActiveSpreadsheetName();
@@ -85,16 +85,19 @@ public class LeandcCommands extends SpreadsheetDocHelper
             String diSheetName = getSheetName("DI", activeSpreadsheetName, spreadsheetList);
             String aiSheetName = getSheetName("AI", activeSpreadsheetName, spreadsheetList);
             String doSheetName = getSheetName("DO", activeSpreadsheetName, spreadsheetList);
+            String aoSheetName = getSheetName("AO", activeSpreadsheetName, spreadsheetList);
             
             XCheckBox diCheckbox = generateXmlDialog.insertCheckBox(generateXmlDialog, 10, 10, 20, 8, "~DI", Boolean.FALSE, 1);
             XCheckBox aiCheckbox = generateXmlDialog.insertCheckBox(generateXmlDialog, 10, 30, 20, 8, "~AI", Boolean.FALSE, 1);
             XCheckBox doCheckbox = generateXmlDialog.insertCheckBox(generateXmlDialog, 10, 50, 20, 8, "~DO", Boolean.FALSE, 1);
+            XCheckBox aoCheckbox = generateXmlDialog.insertCheckBox(generateXmlDialog, 10, 70, 20, 8, "~AO", Boolean.FALSE, 1);
             
             XComboBox diComboBox = generateXmlDialog.insertComboBox(generateXmlDialog, 30, 10, 90, 12, spreadsheetList, diSheetName);
             XComboBox aiComboBox = generateXmlDialog.insertComboBox(generateXmlDialog, 30, 30, 90, 12, spreadsheetList, aiSheetName);
             XComboBox doComboBox = generateXmlDialog.insertComboBox(generateXmlDialog, 30, 50, 90, 12, spreadsheetList, doSheetName);
+            XComboBox aoComboBox = generateXmlDialog.insertComboBox(generateXmlDialog, 30, 70, 90, 12, spreadsheetList, aoSheetName);
             
-            generateXmlDialog.insertButton(generateXmlDialog, 80, 70, 40, 14, "~Generate", PushButtonType.OK, "buttonGenerateDataObjectXml");
+            generateXmlDialog.insertButton(generateXmlDialog, 80, 90, 40, 14, "~Generate", PushButtonType.OK, "buttonGenerateDataObjectXml");
             
             generateXmlDialog.createWindowPeer();
             generateXmlDialog.xDialog = UnoRuntime.queryInterface(XDialog.class, generateXmlDialog.mxDialogControl);
@@ -105,9 +108,11 @@ public class LeandcCommands extends SpreadsheetDocHelper
                     (generateXmlDialog.getCheckBoxState(diCheckbox) == 1),
                     (generateXmlDialog.getCheckBoxState(aiCheckbox) == 1),
                     (generateXmlDialog.getCheckBoxState(doCheckbox) == 1),
+                    (generateXmlDialog.getCheckBoxState(aoCheckbox) == 1),
                     generateXmlDialog.getComboBoxSelectedValue(diComboBox),
                     generateXmlDialog.getComboBoxSelectedValue(aiComboBox),
-                    generateXmlDialog.getComboBoxSelectedValue(doComboBox));
+                    generateXmlDialog.getComboBoxSelectedValue(doComboBox),
+                    generateXmlDialog.getComboBoxSelectedValue(aoComboBox));
             }
             
         }
@@ -128,14 +133,14 @@ public class LeandcCommands extends SpreadsheetDocHelper
         }
     }
     
-    private void GenerateDataObjectXmlImpl(Boolean isDISelected, Boolean isAISelected, Boolean isDOSelected,
-        String diSheetName, String aiSheetName, String doSheetName) throws IOException, XMLStreamException {
+    private void GenerateDataObjectXmlImpl(Boolean isDISelected, Boolean isAISelected, Boolean isDOSelected, Boolean isAOSelected,
+        String diSheetName, String aiSheetName, String doSheetName, String aoSheetName) throws IOException, XMLStreamException {
         
         ByteArrayOutputStream xmlStream = null;
         XMLStreamWriter xmlWriter = null;
         Writer fileWriter  = null;
         
-        if(isDISelected || isAISelected || isDOSelected) {
+        if(isDISelected || isAISelected || isDOSelected || isAOSelected) {
             try {
                 
                 xmlStream = new ByteArrayOutputStream();
@@ -146,7 +151,7 @@ public class LeandcCommands extends SpreadsheetDocHelper
                 xmlWriter.writeStartDocument("utf-8", "1.0");
                 
                 xmlWriter.writeComment(
-                    getCommentForDataObjectXmlGeneration(isDISelected, isAISelected, isDOSelected, diSheetName, aiSheetName, doSheetName));
+                    getCommentForDataObjectXmlGeneration(isDISelected, isAISelected, isDOSelected, isAOSelected, diSheetName, aiSheetName, doSheetName, aoSheetName));
                         
                 xmlWriter.writeStartElement("objects");
                 
@@ -175,6 +180,15 @@ public class LeandcCommands extends SpreadsheetDocHelper
                         ObjectSheetToXmlStream("DO", doSheetName, xmlWriter);
                     }
                     xmlWriter.writeEndElement();//DOTable
+                }
+                
+                if(isAOSelected) {
+                    // AO table
+                    xmlWriter.writeStartElement("AOTable");
+                    if(!"".equals(aoSheetName)) {
+                        ObjectSheetToXmlStream("AO", aoSheetName, xmlWriter);
+                    }
+                    xmlWriter.writeEndElement();//AOTable
                 }
                 
                 xmlWriter.writeEndElement();//generatedObjects
@@ -284,6 +298,11 @@ public class LeandcCommands extends SpreadsheetDocHelper
                 String relatedSpreadsheetName = activeSheetName.replace("_DO", "_DI");
                 result = Arrays.asList(sheetNamesList).contains(relatedSpreadsheetName) ? relatedSpreadsheetName : "";
             }
+            else if(activeSheetName.endsWith("_AO"))
+            {
+                String relatedSpreadsheetName = activeSheetName.replace("_AO", "_DI");
+                result = Arrays.asList(sheetNamesList).contains(relatedSpreadsheetName) ? relatedSpreadsheetName : "";
+            }
             else
             {
                 result = "";
@@ -304,6 +323,11 @@ public class LeandcCommands extends SpreadsheetDocHelper
             else if(activeSheetName.endsWith("_DO"))
             {
                 String relatedSpreadsheetName = activeSheetName.replace("_DO", "_AI");
+                result = Arrays.asList(sheetNamesList).contains(relatedSpreadsheetName) ? relatedSpreadsheetName : "";
+            }
+            else if(activeSheetName.endsWith("_AO"))
+            {
+                String relatedSpreadsheetName = activeSheetName.replace("_AO", "_AI");
                 result = Arrays.asList(sheetNamesList).contains(relatedSpreadsheetName) ? relatedSpreadsheetName : "";
             }
             else
@@ -328,17 +352,49 @@ public class LeandcCommands extends SpreadsheetDocHelper
                 String relatedSpreadsheetName = activeSheetName.replace("_AI", "_DO");
                 result = Arrays.asList(sheetNamesList).contains(relatedSpreadsheetName) ? relatedSpreadsheetName : "";
             }
+            else if(activeSheetName.endsWith("_AO"))
+            {
+                String relatedSpreadsheetName = activeSheetName.replace("_AO", "_DO");
+                result = Arrays.asList(sheetNamesList).contains(relatedSpreadsheetName) ? relatedSpreadsheetName : "";
+            }
             else
             {
                 result = "";
             }
         }
-        
+
+        if("AO".equals(objectType))
+        {
+            if(activeSheetName.endsWith("_AO"))
+            {
+                result = activeSheetName;
+            }
+            else if(activeSheetName.endsWith("_DI"))
+            {
+                String relatedSpreadsheetName = activeSheetName.replace("_DI", "_AO");
+                result = Arrays.asList(sheetNamesList).contains(relatedSpreadsheetName) ? relatedSpreadsheetName : "";
+            }
+            else if(activeSheetName.endsWith("_AI"))
+            {
+                String relatedSpreadsheetName = activeSheetName.replace("_AI", "_AO");
+                result = Arrays.asList(sheetNamesList).contains(relatedSpreadsheetName) ? relatedSpreadsheetName : "";
+            }
+            else if(activeSheetName.endsWith("_DO"))
+            {
+                String relatedSpreadsheetName = activeSheetName.replace("_DO", "_AO");
+                result = Arrays.asList(sheetNamesList).contains(relatedSpreadsheetName) ? relatedSpreadsheetName : "";
+            }
+            else
+            {
+                result = "";
+            }
+        }
+
         return result;
     }
     
-    private String getCommentForDataObjectXmlGeneration(Boolean isDISelected, Boolean isAISelected, Boolean isDOSelected, 
-            String diSheetName, String aiSheetName, String doSheetName)
+    private String getCommentForDataObjectXmlGeneration(Boolean isDISelected, Boolean isAISelected, Boolean isDOSelected, Boolean isAOSelected, 
+            String diSheetName, String aiSheetName, String doSheetName, String aoSheetName)
     {
         String comment = "";
         
@@ -355,6 +411,11 @@ public class LeandcCommands extends SpreadsheetDocHelper
         if(isDOSelected && !"".equals(doSheetName))
         {
             comment += " DO=\"" + doSheetName + "\"";
+        }
+        
+        if(isAOSelected && !"".equals(aoSheetName))
+        {
+            comment += " AO=\"" + aoSheetName + "\"";
         }
         
         comment = "".equals(comment) ? "There where no sheets selected for XML generation." : ("XML generated from sheets:" + comment);
