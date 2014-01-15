@@ -1,0 +1,37 @@
+In order to prepare the project for Netbeans 7.4 IDE please follow 
+instructions below if experiencing any problems. These project setting
+adjustements were required in following system configuration:
+	* Netbeans IDE 7.4
+	* Apache OpenOffice API plugin 3.0.0.beta
+	* LibreOffice & SDK 3.5.7
+	* JRE (gcj-jre) 4.6.3
+
+================================================================================
+Add following JARs to the project libraries
+in case some imports can't be resolved:
+	/usr/share/java/ridl.jar
+	/usr/share/java/jurt.jar
+	/usr/share/java/juh.jar
+
+Some projects settings already have these JARs included automatically in the 
+'project.properties' file under projects directory 'nbproject'
+
+================================================================================
+When project is created from scratch file 'build-uno-impl.xml' 
+under projects directory 'nbproject' contains the follwing entry:
+    <target name="jar" depends="-uno-project-init,uno-idl-compile,-jar-idl-types,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-do-openoffice-manifest,-post-jar">
+
+remove these three arguments:
+	-do-jar-with-manifest
+	-do-jar-without-manifest
+	-do-jar-with-mainclass
+
+so the entry looks like this:
+    <target name="jar" depends="-uno-project-init,uno-idl-compile,-jar-idl-types,compile,-pre-jar,-do-jar-with-libraries,-do-openoffice-manifest,-post-jar">
+
+This should resolve the issue if project fails to build.
+
+
+Created by AK
+14/01/2014
+
