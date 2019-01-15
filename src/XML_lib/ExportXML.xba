@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script:module PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "module.dtd">
+<script:module xmlns:script="http://openoffice.org/2000/script" script:name="ExportXML" script:language="StarBasic" script:moduleType="normal">REM ***** BASIC *****
+Option Explicit
+
+REM Function replaces XML entities (&quot;&amp;amp;&quot;, &quot;&amp;quot;&quot;, &quot;&amp;apos;&quot;, &quot;&amp;lt;&quot;, &quot;&amp;gt;&quot;) with corresponding characters
+Function FromEntity (ByVal s As String) As String
+	Dim Pos As Integer, i As Integer
+	Dim Entities As Variant : Entities = Array (&quot;&amp;amp;&quot;, &quot;&amp;quot;&quot;, &quot;&amp;apos;&quot;, &quot;&amp;lt;&quot;, &quot;&amp;gt;&quot;)
+	Dim Chars As Variant : Chars = Array (&quot;&amp;&quot;, Chr (34), &quot;&apos;&quot;, &quot;&lt;&quot;, &quot;&gt;&quot;)
+	for i = 0 to 4	
+		Pos = InStr (s, Entities (i)
+		While Pos &lt;&gt; 0
+			Pos = InStr (s, Entities (i)
+			s = ReplaceString (s, Chars (i), Entities (i))
+		Wend
+	Next i
+	FromEntity = s
+End Function
+
+REM Function replaces characters &amp;, &apos; (apostrophe) &quot; (quote) &lt; and &gt; with corresponding XML entities
+Function ToEntity (ByVal s As String) As String
+	Dim Pos As Integer, i As Integer, l As Integer, From As Integer
+	Dim Entities As Variant : Entities = Array (&quot;&amp;amp;&quot;, &quot;&amp;quot;&quot;, &quot;&amp;apos;&quot;, &quot;&amp;lt;&quot;, &quot;&amp;gt;&quot;)
+	Dim Chars As Variant : Chars = Array (&quot;&amp;&quot;, Chr (34), &quot;&apos;&quot;, &quot;&lt;&quot;, &quot;&gt;&quot;)
+	REM To make sure that &apos;&amp;&apos; chars of any existing entities are not converted,
+	REM the existing entities (if any) are temporarily converted back to characters
+	s = FromEntity (s)
+	l = Len (s)
+	For i = 0 to 4	
+		From = 1
+		Pos = InStr (From, s, Chars (i)
+		While Pos &lt;&gt; 0
+			From = Pos + 1
+			s = Left (s, Pos-1) &amp; Entities (i) &amp; Right (s, l-Pos)
+			l = Len (s)
+			Pos = InStr (From, s, Chars (i)
+		Wend
+	Next i
+	ToEntity = s
+End Function
+
+REM Sub fills array Row with text from row RowN of sheet oSheet. Cols -- number of columns to use
+Sub GetRow (oSheet, Row, RowN, Cols) &apos;Sheet object, row values array, row number to read, number of columns to read
+	Dim c As Integer
+	ReDim Row (1 to Cols)
+	For c = 1 to Cols
+		Row (c) = ToEntity (Trim (oSheet.getCellByPosition (c,RowN).string)
+	Next c
+End Sub
+
+REM Sub fills array Head with text of row 1 starting from column B of sheet oSheet until the first empty cell.
+REM Number of columns (0 to 255) is returned to Cols. 
+REM Number of rows are counted until the first empty cell of column B and returned to Rows
+Sub GetHeaders (oSheet, Head, Cols, Rows)
+	Dim c As Integer, r As Integer &apos;column, row 
+	Dim Cell As String
+	REM Get number of rows of column 1 (B1:B1048576)
+	c = 1 : r = 0 &apos;Begin from B1
+	Rows = 0 : Cols = 0
+	Cell = ToEntity (Trim (oSheet.getCellByPosition (c,r).string)
+	If Cell = &quot;&quot; Then Exit Sub
+		While Cell &lt;&gt; &quot;&quot;
+			r = r + 1
+			Cell = ToEntity (Trim (oSheet.getCellByPosition (c,r).string))
+		Wend
+		Rows = r - 1
+	REM Get number of columns in row 0 (A1:IV1). No more then 255 columns will be processed 
+	REM and fill Head array with values
+	c = 1 : r = 0 &apos;Begin from B1
+	Cell = ToEntity (Trim (oSheet.getCellByPosition (c,0).string))
+	While (Cell &lt;&gt; &quot;&quot; And c &lt; 256)
+		Head (c) = Cell
+		c = c + 1
+		Cell = ToEntity (Trim (oSheet.getCellByPosition (c,r).string))
+	Wend
+	Cols = c - 1
+	REM	Reduce arrays to the size actually used
+	If Cols &gt; 1 Then
+		ReDim Preserve Head (1 To Cols)
+	Else
+		ReDim Preserve Head (1 To 1)
+	End If
+End	Sub
+
+REM Sub fills array Sheets with the names of sheets in the current document.
+REM The total number of sheets is returned to NoOfSheets.
+REM Array IOSheets is filled with names of input and output sheets.
+REM Input and output sheets are recognized if the current sheet name ends with
+REM &quot;_DI&quot;, &quot;_AI&quot;, &quot;_DO&quot; or &quot;_AO&quot; (any character case)
+REM Other input and output sheets are recognized if they have the same name as the current sheet
+REM (excluding 3 last characters) with added &quot;_DI&quot;, &quot;_AI&quot;, &quot;_DO&quot; or &quot;_AO&quot; (any case).
+REM For example, if the current sheet is SCADA_DI then sheets SCADA_AI, SCADA_DO and SCADA_AO will be 
+REM added to IOSheets. If any of the input and output sheets is missing, the corresponding value of IOSheets will be empty (&quot;&quot;)
+Sub GetSheets (CurrSheet, IOSheets, Sheets, NoOfSheets)
+	Dim IO As Variant : IO = Array (&quot;_DI&quot;, &quot;_AI&quot;, &quot;_DO&quot;, &quot;_AO&quot;)
+	Dim ShortName As String
+	Dim i As Integer
+	NoOfSheets = ThisComponent.Sheets ().Count
+	REM Get full list of sheets
+	For i = 0 to NoOfSheets - 1
+		Sheets (i) = ThisComponent.Sheets (i).Name
+	Next i
+	If PartStringInArray (IO (), UCase (Right (CurrSheet, 2)), 1) &lt; 0 Then Exit Sub
+	ShortName = RTrimStr (CurrSheet, Right (CurrSheet, 3))
+	REM Get default list of IO sheets
+	For i = 0 to 3
+		if (ThisComponent.Sheets ().hasByName (ShortName + IO (i)) &lt; 0) Then IOSheets (i, 0) = ShortName + IO (i) 
+	Next i
+	ReDim Preserve Sheets (NoOfSheets)
+End Sub
+
+REM Returns a string of all the attributes of an element.
+Function AttString (oAttList) As String
+	Dim oAtt &apos;A single attribute node
+	Dim sValue As String &apos;A single attribute&apos;s value
+	Dim sAtts As String &apos;The string containing all attributes
+	Dim i%
+	If Not IsNull (oAttList) Then
+		For i = 0 To oAttList.getLength - 1
+			oAtt = oAttList.item (i)
+			sValue = oAtt.getNodeValue
+			If sValue &lt;&gt; &quot;&quot; Then
+				If sValue = &quot;###&quot; Then sValue = &quot;&quot;
+				sAtts = sAtts &amp; &quot; &quot; &amp; oAtt.getNodeName &amp; &quot;=&quot;&quot;&quot; &amp; sValue &amp; &quot;&quot;&quot;&quot;
+			End If
+		Next
+	End If
+	AttString = sAtts
+End Function
+
+REM Checks recursively, if there is some child node with content, be it text,
+REM comment or attribute value other than &quot;&quot;. Returns True, if some content
+REM is found in the tree, otherwise False.
+REM It is called by PrintDom, before the actual element start tag is written,
+REM so PrintDom can abstain from printing an empty element.
+Function HasContent (oElementList) As Boolean
+	Dim oChild &apos;A single child node of oElementList
+	Dim oAttributes &apos;The attributes of oChild
+	Dim oChildren &apos;The child nodes of oChild
+	Dim i%, j%
+	For i = 0 To oElementList.getLength - 1
+		oChild = oElementList.item (i)
+		If oChild.hasAttributes Then
+			oAttributes = oChild.getAttributes
+			For j = 0 To oAttributes.getLength - 1
+				If oAttributes.item (j).getNodeValue &lt;&gt; &quot;&quot; Then
+					HasContent = True
+					Exit Function
+				End If
+			Next
+		End If
+		If oChild.getNodeType = com.sun.star.xml.dom.NodeType.TEXT_NODE Then
+			If oChild.getNodeValue &lt;&gt; &quot;&quot; Then
+				HasContent = True
+				Exit Function
+			End If
+		Elseif oChild.getNodeType = com.sun.star.xml.dom.NodeType.COMMENT_NODE Then
+			If oChild.getNodeValue &lt;&gt; &quot;&quot; Then
+				HasContent = True
+				Exit Function
+			End If
+		Else
+			oChildren = oChild.getChildNodes ()
+			If oChildren.getLength &lt;&gt; 0 Then
+				REM Start the recursion
+				If HasContent (oChildren) Then
+					HasContent = True
+					Exit Function
+				End If
+			End If
+		End If
+	Next
+	HasContent = False
+End Function
+
+REM Writes the elements of a DOM tree recursively line after line into a
+REM text file. Mark to start with iLevel 0.
+REM Indents lower levels by accumulating iIndent spaces (or sICh), except for text nodes:
+REM they are written in the same line directly after the element start tag
+REM and are directly followed by the element end tag.
+REM It is assumed that there are either one text node or one or more other
+REM child nodes to an element, if any.
+REM Optional sICh parameter sets character used for indentation. If skipped, space (&quot; &quot;) will be used
+Sub PrintDom (oNode, oStream, iLevel As Integer, iIndent As Integer, Optional sICh As String)
+	Dim oElementChildren
+	Dim oChild
+	Dim sLine As String
+	Dim sAtt As String
+	Dim sIndent As String
+	Dim i%, iLen%
+	Dim sNodeName As String
+	sNodeName = oNode.getNodeName
+	If IsMissing (sICh) Then
+		sIndent = String (iLevel * iIndent, &quot; &quot;)
+	Else
+		sIndent = String (iLevel * iIndent, sICh)
+	End If
+	REM Only comments and elements are treated.
+	If oNode.getNodeType = com.sun.star.xml.dom.NodeType.COMMENT_NODE Then
+		REM XML comment
+		sLine = sIndent &amp; &quot;&lt;!-- &quot; &amp; oNode.getNodeValue &amp; &quot; --&gt;&quot;
+		oStream.writeString (sLine &amp; CHR$ (10))
+	Elseif oNode.getNodeType = com.sun.star.xml.dom.NodeType.ELEMENT_NODE Then
+		REM XML element
+		sAtt = AttString (oNode.getAttributes)
+		REM Check, if the element has data. Otherwise the element is skipped.
+		If oNode.hasChildNodes OR sAtt &lt;&gt; &quot;&quot; Then
+			oElementChildren = oNode.getChildNodes
+			If HasContent (oElementChildren) Then
+				sLine = sIndent &amp; &quot;&lt;&quot; &amp; sNodeName &amp; sAtt &amp; &quot;&gt;&quot; &apos;Start tag line
+				iLen = oElementChildren.getLength
+				If iLen = 1 Then
+					REM Test for text node, assuming that there are no other
+					REM sibling nodes besides a text node.
+					oChild = oElementChildren.item (0)
+					If oChild.getNodeType = com.sun.star.xml.dom.NodeType.TEXT_NODE Then
+						sLine = sLine &amp; oChild.getNodeValue &amp; &quot;&lt;/&quot; &amp; sNodeName &amp; &quot;&gt;&quot;
+						REM Write the line: start tag plus text value plus end tag.
+						oStream.writeString (sLine &amp; CHR$ (10))
+						Exit Sub
+					End If
+				End If
+				REM At this point there are child elements other than text nodes.
+				REM Write the start tag line.
+				oStream.writeString (sLine &amp; CHR$ (10))
+				For i = 0 To iLen - 1
+					REM Start the recursion, increment the indentation level
+					PrintDom (oElementChildren.item (i), oStream, iLevel + 1, iIndent, Chr (9))
+				Next
+				sLine = sIndent &amp; &quot;&lt;/&quot; &amp; sNodeName &amp; &quot;&gt;&quot; &apos;End tag line
+				REM Write the end tag line.
+				oStream.writeString (sLine &amp; CHR$ (10))
+		Else
+				REM There are no child elements to be written.
+				REM If there are attributes, the short notation is used.
+				REM If there are not attributes, empty element tag is written.
+				sLine = sIndent &amp; &quot;&lt;&quot; &amp; sNodeName &amp; sAtt &amp; &quot;/&gt;&quot;
+				REM Write the element in a short notation line.
+				oStream.writeString (sLine &amp; CHR$ (10))
+			End If
+		End If
+	End If
+End Sub
+
+
+REM Writes the structure of the current DOM document
+REM into a valid and nicely formatted XML text file.
+REM This subroutine and the called subroutines and functions are not
+REM document specific and needn&apos;t be part of the document library.
+REM They can be stored in the &quot;My Macros&quot; library.
+Sub WriteDomToFile (oDOM, sFilePath As String)
+	Dim oSimpleFileAccess &apos;SimpleFileAccess service
+	Dim oOutputStream &apos;Stream returned from SimpleFileAccess
+	Dim oTextOutput &apos;TextOutputStream service
+	Dim oNodes &apos;List of child nodes of the root node
+	Dim i%
+	Dim iIndentLevel As Integer &apos;Indentation level
+	Dim iIndentSpaces As Integer &apos;Number of spaces added to each indentation level
+	On Error Goto Catch
+	iIndentSpaces = 1
+	REM Set the output stream
+	sFilePath = ConvertToURL (sFilePath)
+	oSimpleFileAccess = createUnoService (&quot;com.sun.star.ucb.SimpleFileAccess&quot;)
+	With oSimpleFileAccess
+		If .exists (sFilePath) Then .kill (sFilePath)
+			oOutputStream = .openFileWrite (sFilePath)
+	End With
+	oTextOutput = createUnoService (&quot;com.sun.star.io.TextOutputStream&quot;)
+	With oTextOutput
+		.OutputStream = oOutputStream
+		.setEncoding (&quot;UTF-8&quot;)
+		REM The first line is a processing instruction. It usually isn&apos;t part of
+		REM the DOM tree. So we write it separately.
+		.WriteString (&quot;&lt;?xml version=&quot;&quot;1.0&quot;&quot; encoding=&quot;&quot;UTF-8&quot;&quot;?&gt;&quot; &amp; CHR$ (10))
+		REM A DOM tree can consist of zero, one or more child nodes on the
+		REM root level. The child nodes are treated hierarchically.
+		oNodes = oDOM.getChildNodes
+		For i = 0 To oNodes.getLength - 1
+			PrintDom (oNodes.item (i), oTextOutput, iIndentLevel, iIndentSpaces, Chr (9))
+		Next
+		.closeOutput
+	End With
+	oOutputStream.closeOutput
+	Exit Sub
+	Catch:
+	Print &quot;Error &quot; &amp; Err &amp; &quot; (&quot; &amp; Error (Err) &amp; &quot;)&quot;
+End Sub
+
+Sub Main
+	GlobalScope.BasicLibraries.LoadLibrary (&quot;Tools&quot;) 
+	Dim oSheet
+	Dim IOSheets (3, 1) As String &apos;Sheets used for generating xml file (DI, AI, DO, AO and their descriptions)
+	IOSheets (0, 1) = &quot;DI&quot; : IOSheets (1, 1) = &quot;AI&quot; : IOSheets (2, 1) = &quot;DO&quot; : IOSheets (3, 1) = &quot;AO&quot;
+	Dim NoOfSheets As Integer &apos;Total number of sheets
+	Dim Sheets (255) As String &apos;The list of sheet names
+	Dim CurrSheet As String &apos;The name of the current sheet
+	Dim Head (1 To 256) As String &apos;Headers (The text content from cell B1 to the first empty cell of row 1)
+	Dim Row () As String &apos;The text content from cells of row
+	Dim oLib &apos;Dialogs library
+	Dim oModule, oDlg &apos;Dialog object
+	Dim oComboBox (3), oCheckBox (3) &apos;Dialog elements
+	Dim oFileName1, oFileName2 &apos;Predefined XML files names to choose from.
+	Dim oOptionButton1, oOptionButton2
+	Dim oFrame &apos;The main window object
+	Dim WindowHeight As Integer, WindowWidth As Integer &apos;Dimension of the main window
+	Dim XPos As Integer, YPos As Integer &apos;Position of the dialog
+	Dim XSize As Integer, YSize As Integer &apos;Size of the dialog window
+	Dim OutputFile As String &apos;filename
+	Dim i As Integer, j As Integer &apos;General integer variables
+	Dim r As Integer, c As Integer &apos;Row and column indexes 
+	Dim Cols As Integer, Rows As Integer &apos;Number of columns and rows
+	Dim UsedIOs As Integer &apos;Number of IO sheets to be used
+	Dim oDocBuilder &apos;DocumentBuilder interface
+	Dim oXML &apos;XML document object
+	Dim oRoot &apos;Root node (&lt;object&gt;...&lt;/object&gt;
+	Dim oNode &apos;Nodes (DITable, AITable,...)
+	Dim oSubNode &apos;DI, AI, DO, AO)
+	Dim oElement &apos;Node elements, children of oSubNode
+	Dim oNComment &apos;Comment node
+	Dim Comment As String &apos;Comment string
+
+	oSheet = ThisComponent.CurrentController.ActiveSheet
+	CurrSheet = oSheet.Name
+	GetSheets (CurrSheet, IOSheets, Sheets, NoOfSheets) 
+	GetHeaders (oSheet, Head, Cols, Rows)
+	REM Check if header exists
+	If Cols &lt; 1 Then
+		MsgBox &quot;No header on the current sheet&quot;, MB_ICONEXCLAMATION, &quot;Export XML&quot;
+		Exit Sub
+	End If
+	REM Check if there is at least one data row
+	If Rows &lt; 1 Then
+		MsgBox &quot;Data row missing&quot;, MB_ICONEXCLAMATION, &quot;Export XML&quot;
+		Exit Sub
+	End If
+	DialogLibraries.LoadLibrary(&quot;XML_lib&quot;)
+	oLib = DialogLibraries.getByName (&quot;XML_lib&quot;)
+	oModule = oLib.getByName (&quot;OutputFile&quot;)
+	oDlg = CreateUnoDialog (oModule)
+	oComboBox (0) = oDlg.GetControl (&quot;DIComboBox&quot;)
+	oComboBox (1) = oDlg.GetControl (&quot;AIComboBox&quot;)
+	oComboBox (2) = oDlg.GetControl (&quot;DOComboBox&quot;)
+	oComboBox (3) = oDlg.GetControl (&quot;AOComboBox&quot;)
+	oCheckBox (0) = oDlg.GetControl (&quot;DICheckBox&quot;)
+	oCheckBox (1) = oDlg.GetControl (&quot;AICheckBox&quot;)
+	oCheckBox (2) = oDlg.GetControl (&quot;DOCheckBox&quot;)
+	oCheckBox (3) = oDlg.GetControl (&quot;AOCheckBox&quot;)
+	oFileName1 = oDlg.GetControl (&quot;FileName1&quot;)
+	oFileName2 = oDlg.GetControl (&quot;FileName2&quot;)
+	oOptionButton1 = oDlg.GetControl (&quot;OptionButton1&quot;)
+	oOptionButton2 = oDlg.GetControl (&quot;OptionButton2&quot;)
+	REM Fill entries to the DIComboBox
+	For i = 0 to 3
+		for j = 0 to NoOfSheets - 1
+			oComboBox (i).additem (Sheets (j) , j)
+			If UCase (Sheets (j)) = UCase (IOSheets (i, 0)) Then 
+				oComboBox (i).Text = oComboBox (i).Items (j)
+				oCheckBox (i).State = 1
+			End If
+		Next j
+	Next i
+	oFileName2.Text = &quot;_&quot; &amp; RTrimStr (oComboBox (0).Text, Right (oComboBox (0).Text, 3)) &amp; &quot;.xml&quot;
+	REM Get size of the main window to center the dialog
+	oFrame = ThisComponent.getCurrentController().Frame
+	XSize = oDlg.Size.Width
+	YSize = oDlg.Size.Height
+	WindowHeight = oFrame.getComponentWindow.Size.Height
+	WindowWidth = oFrame.getComponentWindow.Size.Width
+	XPos = ((WindowWidth/2) - (XSize/2)) : If XPos &lt; 1 then XPos = 1
+	YPos = ((WindowHeight/2) - (YSize/2)) : If YPos &lt; 1 then YPos = 1
+	oDlg.setPosSize(XPos, YPos, XSize, YSize, 3) &apos;Set the dialog position without changing it&apos;s size
+	If oDlg.execute = 1 Then
+		REM Update IO list according user input
+		UsedIOs = 0 &apos;Number of currently used IO sheets
+		For i = 0 to 3
+			if oCheckBox (i).State = 1 Then
+				IOSheets (i, 0) = Trim (oComboBox (i).Text)
+				REM Check if sheet name is selected
+				If IOSheets (i, 0) = &quot;&quot; Then 
+					MsgBox IOSheets (i, 1) &amp; &quot; checked but sheet name missing&quot;, MB_ICONEXCLAMATION, &quot;Export XML&quot;
+					Exit Sub
+				End If
+				REM Check if sheet exists
+				if Not ThisComponent.Sheets ().hasByName (IOSheets (i, 0)) Then
+					MsgBox &quot;Sheet &quot;&quot;&quot; &amp; IOSheets (i, 0) &amp; &quot;&quot;&quot; doesn&apos;t exist&quot;, MB_ICONEXCLAMATION, &quot;Export XML&quot;
+					Exit Sub
+				End If
+				UsedIOs = UsedIOs + 1
+			Else
+				IOSheets (i, 0) = &quot;&quot;
+			End If
+		Next i
+		If UsedIOs &gt; 0 Then
+			OutputFile = oFileName1.Text
+			If oOptionButton2.State Then
+				OutputFile = Trim (oFileName2.Text)
+			End If
+			REM Add current directory as path to filename
+			REM Function DirectoryNameoutofPath returns directory path to the current document
+			If ThisComponent.url = &quot;&quot; Then
+				MsgBox &quot;The current document is not saved&quot;, MB_ICONEXCLAMATION, &quot;Export XML&quot;
+				Exit Sub
+			End If
+			OutputFile = ConvertFromURL (DirectoryNameoutofPath (ThisComponent.url, &quot;/&quot;)) &amp; &quot;/&quot; &amp; OutputFile
+			oDocBuilder = createUnoService (&quot;com.sun.star.xml.dom.DocumentBuilder&quot;) 
+			REM Create an XML object
+			oXML = oDocBuilder.newDocument
+			Comment = &quot;XML generated from sheets:&quot;
+			REM Add used IO sheet names to XML comment
+			For i = 0 to 3
+				If IOsheets (i, 0) &lt;&gt; &quot;&quot; Then
+					Comment = Comment &amp; &quot; &quot; &amp; IOsheets (i, 1) &amp; &quot;=&quot;&quot;&quot; &amp; IOsheets (i, 0) &amp; &quot;&quot;&quot;&quot;
+				End If
+			Next i
+			REM Create root node and comment
+			oNComment = oXML.createComment (Comment)
+			oXML.appendChild (oNComment)
+			oRoot = oXML.createElement (&quot;objects&quot;)
+			oXML.appendChild (oRoot)
+			REM Create nodes for each selected sheet
+			For i = 0 to 3
+				If IOsheets (i, 0) &lt;&gt; &quot;&quot; Then
+					oSheet = ThisComponent.Sheets ().getByName (IOsheets (i, 0) &apos;Get needed sheet
+					ReDim Head (1 To 255)
+					GetHeaders (oSheet, Head, Cols, Rows) &apos;Get headers of the sheet
+					oNode = oXML.createElement (IOsheets (i, 1) &amp; &quot;Table&quot;)
+					oRoot.appendChild (oNode)
+					For r = 1 to Rows
+						oElement = oXML.createElement (IOsheets (i, 1))
+						oNode.appendChild (oElement)
+						GetRow (oSheet, Row, r, Cols)
+						For c = 1 to Cols
+							oElement.setAttribute (Head (c) , Row (c))
+						Next c
+					Next r
+				Else
+					oNode = oXML.createElement (IOsheets (i, 1) &amp; &quot;Table&quot;)
+					oRoot.appendChild (oNode)
+					oElement = oXML.createElement (&quot;&quot;)
+					oNode.appendChild (oElement)
+				End If
+			Next i
+			WriteDomToFile (oXML, OutputFile)
+		Else
+			MsgBox &quot;No sheets selected&quot;, MB_ICONEXCLAMATION, &quot;Export XML&quot;
+			Exit Sub
+		End If
+	Else 
+		MsgBox &quot;Operation canceled&quot;, MB_ICONINFORMATION, &quot;Export XML&quot;
+	End If
+End Sub
+
+</script:module>

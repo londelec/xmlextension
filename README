@@ -5,3 +5,7 @@ V1.0.0 [15/10/2013]
 
 V1.1.0 [27/11/2013]
 * Added option to export 'AO' node.
+
+V2.0.0 [15/01/2019]
+* Migrated to LibreOffice Basic
+  tested with LibreOffice version: 6.1.3.2
