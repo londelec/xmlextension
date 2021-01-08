@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dlg:window PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "dialog.dtd">
+<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog" xmlns:script="http://openoffice.org/2000/script" dlg:id="ExportDialog" dlg:left="10" dlg:top="10" dlg:width="164" dlg:height="170" dlg:closeable="true" dlg:moveable="true" dlg:title="Export to XML file">
+ <dlg:styles>
+  <dlg:style dlg:style-id="0" dlg:text-color="0xff0000"/>
+ </dlg:styles>
+ <dlg:bulletinboard>
+  <dlg:titledbox dlg:id="TypeFrame" dlg:tab-index="18" dlg:left="10" dlg:top="6" dlg:width="144" dlg:height="91">
+   <dlg:title dlg:value="Choose sheets to use for xml generation"/>
+  </dlg:titledbox>
+  <dlg:checkbox dlg:id="DICheckBox" dlg:tab-index="2" dlg:left="15" dlg:top="19" dlg:width="22" dlg:height="9" dlg:value="DI" dlg:align="center" dlg:valign="center" dlg:checked="false"/>
+  <dlg:checkbox dlg:id="AICheckBox" dlg:tab-index="4" dlg:left="15" dlg:top="39" dlg:width="22" dlg:height="9" dlg:value="AI" dlg:align="center" dlg:valign="center" dlg:checked="false"/>
+  <dlg:checkbox dlg:id="DOCheckBox" dlg:tab-index="6" dlg:left="15" dlg:top="59" dlg:width="22" dlg:height="9" dlg:value="DO" dlg:align="center" dlg:valign="center" dlg:checked="false"/>
+  <dlg:checkbox dlg:id="AOCheckBox" dlg:tab-index="8" dlg:left="15" dlg:top="79" dlg:width="22" dlg:height="9" dlg:value="AO" dlg:align="center" dlg:valign="center" dlg:checked="false"/>
+  <dlg:combobox dlg:id="DIComboBox" dlg:tab-index="3" dlg:left="39" dlg:top="18" dlg:width="108" dlg:height="13" dlg:spin="true"/>
+  <dlg:combobox dlg:id="AIComboBox" dlg:tab-index="5" dlg:left="39" dlg:top="38" dlg:width="108" dlg:height="13" dlg:spin="true"/>
+  <dlg:combobox dlg:id="DOComboBox" dlg:tab-index="7" dlg:left="39" dlg:top="58" dlg:width="108" dlg:height="13" dlg:spin="true"/>
+  <dlg:combobox dlg:id="AOComboBox" dlg:tab-index="9" dlg:left="39" dlg:top="78" dlg:width="108" dlg:height="13" dlg:spin="true"/>
+  <dlg:titledbox dlg:id="FileFrame" dlg:tab-index="17" dlg:left="10" dlg:top="101" dlg:width="144" dlg:height="45">
+   <dlg:title dlg:value="Choose file name"/>
+  </dlg:titledbox>
+  <dlg:radiogroup>
+   <dlg:radio dlg:id="OptionButton1" dlg:tab-index="10" dlg:left="16" dlg:top="111" dlg:width="11" dlg:height="11" dlg:valign="center" dlg:group-name="SelectFile" dlg:checked="true">
+    <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.script:XML_lib.ExportXML.NameModifyEvent?language=Basic&amp;location=application" script:language="Script"/>
+   </dlg:radio>
+   <dlg:radio dlg:id="OptionButton2" dlg:tab-index="11" dlg:left="16" dlg:top="121" dlg:width="11" dlg:height="11" dlg:valign="center" dlg:group-name="SelectFile">
+    <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.script:XML_lib.ExportXML.NameModifyEvent?language=Basic&amp;location=application" script:language="Script"/>
+   </dlg:radio>
+  </dlg:radiogroup>
+  <dlg:text dlg:id="FileName1" dlg:tab-index="16" dlg:left="28" dlg:top="111" dlg:width="104" dlg:height="9" dlg:value="output.xml" dlg:valign="center"/>
+  <dlg:textfield dlg:id="FileName2" dlg:tab-index="12" dlg:left="27" dlg:top="121" dlg:width="112" dlg:height="12" dlg:valign="center" dlg:value="output.xml">
+   <script:event script:event-name="on-textchange" script:macro-name="vnd.sun.star.script:XML_lib.ExportXML.NameModifyEvent?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:textfield>
+  <dlg:button dlg:id="BrowseButt" dlg:tab-index="13" dlg:left="139" dlg:top="121" dlg:width="12" dlg:height="13" dlg:help-text="Open existing file" dlg:value="...">
+   <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.script:XML_lib.ExportXML.BrowseEvent?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:button>
+  <dlg:text dlg:style-id="0" dlg:id="NameExists" dlg:tab-index="19" dlg:left="28" dlg:top="135" dlg:width="52" dlg:height="9" dlg:value="File already exists!"/>
+  <dlg:checkbox dlg:id="OWCheckBox" dlg:tab-index="14" dlg:disabled="true" dlg:left="89" dlg:top="135" dlg:width="50" dlg:height="9" dlg:value="Overwrite file" dlg:checked="false">
+   <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.script:XML_lib.ExportXML.OverwriteCbEvent?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:checkbox>
+  <dlg:button dlg:id="AdvancedButt" dlg:tab-index="15" dlg:left="11" dlg:top="151" dlg:width="16" dlg:height="14" dlg:help-text="Advanced settings" dlg:value="+">
+   <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.script:XML_lib.ExportXML.AdvancedEvent?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:button>
+  <dlg:button dlg:id="ExportButt" dlg:tab-index="0" dlg:left="86" dlg:top="151" dlg:width="32" dlg:height="14" dlg:default="true" dlg:value="Export" dlg:button-type="ok"/>
+  <dlg:button dlg:id="CancelButt" dlg:tab-index="1" dlg:left="122" dlg:top="151" dlg:width="32" dlg:height="14" dlg:value="Cancel" dlg:button-type="cancel"/>
+ </dlg:bulletinboard>
+</dlg:window>

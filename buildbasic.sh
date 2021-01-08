@@ -1,9 +1,9 @@
 #!/bin/sh
-# LibreOffice XML export extension build script
+# LibreOffice XML import/export extension build script
 # Created By AK
 # Copyright Londelec UK Ltd
-# Revision V1.0 14/01/2019
-VERSION="buildbasicVersion=1.0"
+# Revision V1.1 02/01/2021
+VERSION="buildbasicVersion=1.1"
 
 
 ownname=$(basename $0)		# This is only script name
@@ -13,7 +13,7 @@ manifest="./manifest.xml"
 descfile="./src/description.xml"
 javametadir="META-INF"
 zipname="temp.zip"
-targetname="XMLExportExtension_v"
+targetname="XMLExtension_v"
 targetext=".oxt"
 failure=0
 dvers=""
@@ -23,11 +23,10 @@ includedir="\
 "
 
 
-
 # Usage help function
 usage_func()
 {
-	echo "Build LibreOffice XML export extension"
+	echo "Build LibreOffice XML import/export extension"
 	echo "Usage: ${ownname}"
 	echo
 	echo
@@ -90,7 +89,7 @@ copy_sources_func()
 	return 0	# Success
 }
 
-# Copy include directories temporary directory
+# Copy include directories to temporary directory
 copy_includes_func()
 {
 	for cdir in ${includedir}

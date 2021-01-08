@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dlg:window PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "dialog.dtd">
+<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog" xmlns:script="http://openoffice.org/2000/script" dlg:id="ImportAdv" dlg:left="10" dlg:top="10" dlg:width="120" dlg:height="120" dlg:closeable="true" dlg:moveable="true" dlg:title="Advanced settings">
+ <dlg:bulletinboard>
+  <dlg:text dlg:id="OffsetHLabel" dlg:tab-index="4" dlg:left="12" dlg:top="21" dlg:width="35" dlg:height="8" dlg:value="First Column"/>
+  <dlg:button dlg:id="OkButt" dlg:tab-index="0" dlg:left="46" dlg:top="100" dlg:width="32" dlg:height="14" dlg:default="true" dlg:value="OK" dlg:button-type="ok"/>
+  <dlg:button dlg:id="CancelButt" dlg:tab-index="1" dlg:left="82" dlg:top="100" dlg:width="32" dlg:height="14" dlg:value="Cancel" dlg:button-type="cancel"/>
+  <dlg:titledbox dlg:id="OffsetFrame" dlg:tab-index="5" dlg:left="7" dlg:top="9" dlg:width="80" dlg:height="32">
+   <dlg:title dlg:value="Offsets"/>
+  </dlg:titledbox>
+  <dlg:textfield dlg:id="OffsetHText" dlg:tab-index="2" dlg:left="52" dlg:top="20" dlg:width="25" dlg:height="12" dlg:help-text="Column number where the first attribute name will be placed 1 = &quot;A1&quot;, 2 = &quot;B1&quot;, etc" dlg:maxlength="2"/>
+  <dlg:titledbox dlg:id="CheckboxFrame" dlg:tab-index="6" dlg:left="7" dlg:top="43" dlg:width="80" dlg:height="32">
+   <dlg:title dlg:value="Import"/>
+  </dlg:titledbox>
+  <dlg:checkbox dlg:id="ReplaceEmptyCheckBox" dlg:tab-index="3" dlg:left="11" dlg:top="56" dlg:width="63" dlg:height="9" dlg:help-text="Populate empty attribute values with a place holder &quot;#EMPTY#&quot;" dlg:value="Empty placeholder" dlg:checked="false"/>
+ </dlg:bulletinboard>
+</dlg:window>

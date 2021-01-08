@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<oor:component-data xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" oor:name="Addons" oor:package="org.openoffice.Office">
+  <node oor:name="AddonUI">
+    <node oor:name="OfficeToolBar">
+      <node oor:name="com.londelec.addon.leandcaddon.xmlexportextension" oor:op="remove">
+        <!--Remove legacy name, it was changed since V2.1.0-->
+      </node>
+      <node oor:name="com.londelec.addon.leandcxml.libreoffice" oor:op="replace">
+        <!--This node is used for LibreOffice, tested with V6.2.8.2 (x86) and V7.0.4.2 (x86)-->
+        <node oor:name="m1" oor:op="replace">
+          <prop oor:name="Context" oor:type="xs:string">
+            <value>com.sun.star.sheet.SpreadsheetDocument</value>
+          </prop>
+          <prop oor:name="URL" oor:type="xs:string">
+            <value>vnd.sun.star.script:XML_lib.ExportXML.Main?language=Basic&amp;location=application</value>
+          </prop>
+          <prop oor:name="Title" oor:type="xs:string">
+            <value>Convert to XML</value>
+          </prop>
+          <prop oor:name="ImageIdentifier" oor:type="xs:string">
+            <value/>
+          </prop>
+          <prop oor:name="Target" oor:type="xs:string">
+            <value>_self</value>
+          </prop>
+        </node>
+        <node oor:name="m2" oor:op="replace">
+          <prop oor:name="Context" oor:type="xs:string">
+            <value>com.sun.star.sheet.SpreadsheetDocument</value>
+          </prop>
+          <prop oor:name="URL" oor:type="xs:string">
+            <value>vnd.sun.star.script:XML_lib.ImportXML.Main?language=Basic&amp;location=application</value>
+          </prop>
+          <prop oor:name="Title" oor:type="xs:string">
+            <value>Import XML</value>
+          </prop>
+          <prop oor:name="ImageIdentifier" oor:type="xs:string">
+            <value/>
+          </prop>
+          <prop oor:name="Target" oor:type="xs:string">
+            <value>_self</value>
+          </prop>
+        </node>
+      </node>
+      <node oor:name="com.londelec.addon.leandcxml.openoffice" oor:op="replace">
+        <!--This node is used for OpenOffice, tested with V4.1.8 (x86)-->
+        <prop oor:name="Title">
+          <value>Leandc XML</value>
+        </prop>
+        <node oor:name="ToolBarItems">
+          <node oor:name="m1" oor:op="replace">
+            <prop oor:name="Context" oor:type="xs:string">
+              <value>com.sun.star.sheet.SpreadsheetDocument</value>
+            </prop>
+            <prop oor:name="URL" oor:type="xs:string">
+              <value>vnd.sun.star.script:XML_lib.ExportXML.Main?language=Basic&amp;location=application</value>
+            </prop>
+            <prop oor:name="Title" oor:type="xs:string">
+              <value>Convert to XML</value>
+            </prop>
+            <prop oor:name="ImageIdentifier" oor:type="xs:string">
+              <value/>
+            </prop>
+            <prop oor:name="Target" oor:type="xs:string">
+              <value>_self</value>
+            </prop>
+          </node>
+          <node oor:name="m2" oor:op="replace">
+            <prop oor:name="Context" oor:type="xs:string">
+              <value>com.sun.star.sheet.SpreadsheetDocument</value>
+            </prop>
+            <prop oor:name="URL" oor:type="xs:string">
+              <value>vnd.sun.star.script:XML_lib.ImportXML.Main?language=Basic&amp;location=application</value>
+            </prop>
+            <prop oor:name="Title" oor:type="xs:string">
+              <value>Import XML</value>
+            </prop>
+            <prop oor:name="ImageIdentifier" oor:type="xs:string">
+              <value/>
+            </prop>
+            <prop oor:name="Target" oor:type="xs:string">
+              <value>_self</value>
+            </prop>
+          </node>
+        </node>
+      </node>
+    </node>
+    <node oor:name="OfficeMenuBar">
+      <node oor:name="com.londelec.addon.leandcaddon.xmlexportextension" oor:op="remove">
+        <!--Remove legacy name, no longer using Menu Bar-->
+      </node>
+    </node>
+    <node oor:name="Images">
+      <node oor:name="com.londelec.addon.leandcxml.exportxmlicon" oor:op="replace">
+        <prop oor:name="URL" oor:type="xs:string">
+          <value>vnd.sun.star.script:XML_lib.ExportXML.Main?language=Basic&amp;location=application</value>
+        </prop>
+        <node oor:name="UserDefinedImages">
+          <prop oor:name="ImageSmallURL">
+            <value>%origin%/images/xmlexport.svg</value>
+          </prop>
+          <prop oor:name="ImageBigURL">
+            <value>%origin%/images/xmlexport.svg</value>
+          </prop>
+          <prop oor:name="ImageSmallHCURL">
+            <value>%origin%/images/xmlexport.svg</value>
+          </prop>
+          <prop oor:name="ImageBigHCURL">
+            <value>%origin%/images/xmlexport.svg</value>
+          </prop>
+        </node>
+      </node>
+      <node oor:name="com.londelec.addon.leandcxml.importxmlicon" oor:op="replace">
+        <prop oor:name="URL" oor:type="xs:string">
+            <value>vnd.sun.star.script:XML_lib.ImportXML.Main?language=Basic&amp;location=application</value>
+        </prop>
+        <node oor:name="UserDefinedImages">
+          <prop oor:name="ImageSmallURL">
+            <value>%origin%/images/xmlimport.svg</value>
+          </prop>
+          <prop oor:name="ImageBigURL">
+            <value>%origin%/images/xmlimport.svg</value>
+          </prop>
+          <prop oor:name="ImageSmallHCURL">
+            <value>%origin%/images/xmlimport.svg</value>
+          </prop>
+          <prop oor:name="ImageBigHCURL">
+            <value>%origin%/images/xmlimport.svg</value>
+          </prop>
+        </node>
+      </node>
+    </node>
+  </node>
+</oor:component-data>

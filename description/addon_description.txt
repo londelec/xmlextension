@@ -1,1 +1,1 @@
-This extension is used to convert spreadsheet data to leandc configuration XML.
+Export/Import leandc XML configuration to/from spreadsheets.

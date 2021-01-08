@@ -9,3 +9,16 @@ V1.1.0 [27/11/2013]
 V2.0.0 [15/01/2019]
 * Migrated to LibreOffice Basic
   tested with LibreOffice version: 6.1.3.2
+
+V2.1.0 [08/01/2021]
+* XML import added
+* XML parse and overwrite added to export function
+* Addons-LO.xcu and Addons-OO.xcu merged into a single file used for LibreOffice and OpenOffice
+* Button icons added
+* Advanced settings dialogs created
+  tested with:
+	LibreOffice V7.0.4.2 (x86) on Win10 32bit
+	LibreOffice V6.2.8.2 (x86) on Ubuntu 16.04 32bit
+	LibreOffice V4.2.8.2 (x86) on Ubuntu 14.04 32bit
+	OpenOffice V4.1.8 (x86) on Win10 32bit
+	OpenOffice V3.2.0 (x86) on Ubuntu 10.04 32bit (no toolbar images)

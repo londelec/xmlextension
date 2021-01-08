@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script:module PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "module.dtd">
+<script:module xmlns:script="http://openoffice.org/2000/script" script:name="lecommon" script:language="StarBasic" script:moduleType="normal">REM  *****  BASIC  *****
+Option Explicit
+
+Global Ginitialized As Boolean		&apos; Global variable have been initilized
+Global GfirstCol As Integer			&apos; Default first column is &quot;B&quot;
+Global GhomeURL As String			&apos; The initial path for OpenFile function
+Public Const EMPTYKEY As String = &quot;#EMPTY#&quot;	&apos;Empty attribute placeholder
+Public oSimpleFileAccess As Object
+
+
+REM Initialize global variables
+Public Function GlobalInit()
+	If Not Ginitialized Then
+		Ginitialized = 1
+		GfirstCol = 2	&apos; Default first column is &quot;B&quot;
+		GlobalScope.BasicLibraries.LoadLibrary(&quot;Tools&quot;)
+	End If
+	oSimpleFileAccess = createUnoService(&quot;com.sun.star.ucb.SimpleFileAccess&quot;)
+End Function
+
+REM Position the dialog in the center of the parent object
+Public Function DialogSetPosition(oDlg, oParent, rel As Boolean)
+	Dim xPos As Integer, yPos As Integer &apos;Position of the dialog
+	Dim psParent	&apos;Dimensions of the parent component
+	Dim sizeDlg		&apos;Size of the dialog
+
+	sizeDlg = oDlg.getSize()
+	psParent = oParent.getPosSize()
+	If rel Then
+		psParent.X = 0
+		psParent.Y = 0
+	End If
+
+	xPos = ((psParent.Width/2) - (sizeDlg.Width/2) + psParent.X) : If xPos &lt; 1 then xPos = 1
+	yPos = ((psParent.Height/2) - (sizeDlg.Height/2) + psParent.Y) : If yPos &lt; 1 then yPos = 1
+	oDlg.setPosSize(xPos, yPos, sizeDlg.Width, sizeDlg.Height, 3) &apos;Set the dialog position without changing it&apos;s size
+End Function
+
+REM Add current directory path to filename if necessary
+REM Initialize Global Path to the current document&apos;s path (if saved) or User&apos;s home directory
+Public Function ResolveFilepath(sPath As String)
+	Dim separator As String, homePath As String
+	separator = GetPathSeparator()
+	sPath = Trim(sPath)
+	If InStr(1, sPath, separator) = 0 Then
+		If ThisComponent.URL = &quot;&quot; Then
+			If GetGUIType() = 1 Then &apos; Initialize file path
+				homePath = Environ(&quot;USERPROFILE&quot;) &apos; Windows
+			Else
+				homePath = Environ(&quot;HOME&quot;) &apos; Unix (Linux, MacOS,...)
+			End If
+			homePath = homePath &amp; separator &amp; sPath
+		Else
+			homePath = ConvertFromURL(ThisComponent.URL)
+		End If
+		sPath = ConvertFromURL(DirectoryNameoutofPath(homePath, separator)) &amp; separator &amp; sPath
+	End If
+	If GhomeURL = &quot;&quot; Then GhomeURL = ConvertToURL(DirectoryNameoutofPath(sPath, separator))
+	ResolveFilepath = sPath
+End Function
+
+REM Launch file open dialog and return path of the selected file
+Public Function OpenFile() as String
+	Dim oDialog as Object
+	Dim filePath As String
+	Dim filters(1) as String
+
+	filters(0) = &quot;*.xml&quot;
+	filters(1) = &quot;*.*&quot;
+	oDialog = CreateUnoService(&quot;com.sun.star.ui.dialogs.FilePicker&quot;)
+	AddFiltersToDialog(filters(), oDialog)
+
+	If oSimpleFileAccess.Exists(GhomeURL) Then
+		oDialog.SetDisplayDirectory(GhomeURL)
+	End If
+
+	If oDialog.Execute() = 1 Then
+		filePath = oDialog.Files(0)
+		GhomeURL = DirectoryNameoutofPath(filePath, &quot;/&quot;) &apos; URL is always separated by &apos;/&apos;
+		OpenFile = filePath
+	End If
+	oDialog.Dispose()
+End Function
+</script:module>

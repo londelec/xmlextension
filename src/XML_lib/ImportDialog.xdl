@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dlg:window PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "dialog.dtd">
+<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog" xmlns:script="http://openoffice.org/2000/script" dlg:id="ImportDialog" dlg:left="10" dlg:top="10" dlg:width="164" dlg:height="144" dlg:closeable="true" dlg:moveable="true" dlg:title="file.xml - Import XML">
+ <dlg:styles>
+  <dlg:style dlg:style-id="0" dlg:text-color="0xff0000" dlg:font-weight="100"/>
+ </dlg:styles>
+ <dlg:bulletinboard>
+  <dlg:titledbox dlg:id="NodesFrame" dlg:tab-index="9" dlg:left="10" dlg:top="5" dlg:width="144" dlg:height="60">
+   <dlg:title dlg:value="Choose IO sheets to create"/>
+  </dlg:titledbox>
+  <dlg:checkbox dlg:id="DICheckBox" dlg:tab-index="2" dlg:left="15" dlg:top="16" dlg:width="134" dlg:height="9" dlg:value="node_DI  - 9999 items" dlg:valign="center" dlg:checked="false">
+   <script:event script:event-name="on-itemstatechange" script:macro-name="vnd.sun.star.script:XML_lib.ImportXML.UpdDialog?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:checkbox>
+  <dlg:checkbox dlg:id="AICheckBox" dlg:tab-index="3" dlg:left="15" dlg:top="28" dlg:width="134" dlg:height="9" dlg:value="node_AI - 9999 items" dlg:valign="center" dlg:checked="false">
+   <script:event script:event-name="on-itemstatechange" script:macro-name="vnd.sun.star.script:XML_lib.ImportXML.UpdDialog?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:checkbox>
+  <dlg:checkbox dlg:id="DOCheckBox" dlg:tab-index="4" dlg:left="15" dlg:top="40" dlg:width="134" dlg:height="9" dlg:value="node_DO - 9999 items" dlg:valign="center" dlg:checked="false">
+   <script:event script:event-name="on-itemstatechange" script:macro-name="vnd.sun.star.script:XML_lib.ImportXML.UpdDialog?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:checkbox>
+  <dlg:checkbox dlg:id="AOCheckBox" dlg:tab-index="5" dlg:left="15" dlg:top="52" dlg:width="134" dlg:height="9" dlg:value="node_AO - 9999 items" dlg:valign="center" dlg:checked="false">
+   <script:event script:event-name="on-itemstatechange" script:macro-name="vnd.sun.star.script:XML_lib.ImportXML.UpdDialog?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:checkbox>
+  <dlg:titledbox dlg:id="NameFrame" dlg:tab-index="10" dlg:left="10" dlg:top="72" dlg:width="144" dlg:height="27">
+   <dlg:title dlg:value="Edit sheet name"/>
+  </dlg:titledbox>
+  <dlg:textfield dlg:id="SheetPrefix" dlg:tab-index="6" dlg:left="15" dlg:top="82" dlg:width="134" dlg:height="11" dlg:value="node_">
+   <script:event script:event-name="on-textchange" script:macro-name="vnd.sun.star.script:XML_lib.ImportXML.UpdDialog?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:textfield>
+  <dlg:checkbox dlg:id="OWCheckBox" dlg:tab-index="7" dlg:disabled="true" dlg:left="90" dlg:top="102" dlg:width="64" dlg:height="9" dlg:tabstop="true" dlg:value="Overwrite sheets" dlg:valign="center" dlg:checked="false">
+   <script:event script:event-name="on-itemstatechange" script:macro-name="vnd.sun.star.script:XML_lib.ImportXML.UpdDialog?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:checkbox>
+  <dlg:text dlg:style-id="0" dlg:id="NameExists" dlg:tab-index="11" dlg:left="13" dlg:top="102" dlg:width="54" dlg:height="9" dlg:value="Sheet name exists!" dlg:valign="center"/>
+  <dlg:button dlg:id="AdvancedButt" dlg:tab-index="8" dlg:left="7" dlg:top="125" dlg:width="16" dlg:height="14" dlg:value="+">
+   <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.script:XML_lib.ImportXML.AdvancedEvent?language=Basic&amp;location=application" script:language="Script"/>
+  </dlg:button>
+  <dlg:button dlg:id="ImportButt" dlg:tab-index="0" dlg:left="86" dlg:top="125" dlg:width="32" dlg:height="14" dlg:default="true" dlg:value="Import" dlg:button-type="ok"/>
+  <dlg:button dlg:id="CancelButt" dlg:tab-index="1" dlg:left="122" dlg:top="125" dlg:width="32" dlg:height="14" dlg:value="Cancel" dlg:button-type="cancel"/>
+ </dlg:bulletinboard>
+</dlg:window>

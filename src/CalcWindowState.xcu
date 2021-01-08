@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<oor:component-data xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" oor:name="CalcWindowState" oor:package="org.openoffice.Office.UI">
+  <node oor:name="UIElements">
+    <node oor:name="States">
+      <node oor:name="private:resource/toolbar/addon_com.londelec.addon.leandcxml.libreoffice" oor:op="replace">
+        <!--This node is used for LibreOffice, tested with V6.2.8.2 (x86) and V7.0.4.2 (x86)-->
+        <prop oor:name="UIName" oor:type="xs:string">
+          <value>Leandc XML</value>
+          <value xml:lang="en-US">Leandc XML</value>
+        </prop>
+      </node>
+    </node>
+  </node>
+</oor:component-data>
