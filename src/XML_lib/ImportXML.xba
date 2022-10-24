@@ -9,8 +9,8 @@ Private Const MNAME As String = &quot;Import XML&quot;
 
 Private ColumnNames() As Variant
 Private ColumnsOK As Boolean
-Private nIO(3) As Integer &apos;Number of used nodes for each non-empty IO node type
-Private Rpos(3) As Integer	&apos;Current row position for writing
+Private nIO(3) As Long &apos;Number of used nodes for each non-empty IO node type
+Private Rpos(3) As Long	&apos;Current row position for writing
 Private sheetsIO(3) As Object &apos;Sheets for each IO node type
 Private oSheetObj &apos;Spreadheet object
 Private XMLn As String &apos;XML file name without path, used for dialogs
@@ -21,7 +21,6 @@ Private Overwrite As Boolean &apos;Should existing sheets be overwritten?
 Private oOWCheckBox &apos;&quot;Overwrite&quot; checkbox object
 Private oOKbutt &apos;&quot;OK&quot; button object
 Private oSheetName &apos;Sheet name prefix
-Private oCell &apos;Cell object
 Private oDialogLib &apos;Dialog library
 
 
@@ -169,6 +168,20 @@ Sub CreateCols(cName As String, oAttList As Object)
 	End If
 End Sub
 
+REM Check if value is Integer and copy to Cell
+Sub CopyValue(vValue As Variant, oCell as Object)
+	Dim fval As Double
+	On Local Error Goto copyString
+
+	fval = CDbl(vValue)	&apos;Convert to Double, On Error handles overflow
+	If fval = vValue Then
+		oCell.Value = vValue
+	Else
+		copyString:
+		oCell.String = vValue
+	End If
+End Sub
+
 REM Populate a sheet row with IO node attribute values
 Sub GetValues(sNode As String, oAttList As Object)
 	Dim nAttrib As Integer &apos;Number of attributes of sNode
@@ -197,7 +210,7 @@ Sub GetValues(sNode As String, oAttList As Object)
 	Next i
 	For c = 0 To UBound(Row())
 		If Not IsEmpty(Row(c)) Then
-			sheetsIO(ixIO).getCellByPosition(c + GfirstCol - 1, Rpos(ixIO)).String = Row(c)
+			CopyValue(Row(c), sheetsIO(ixIO).getCellByPosition(c + GfirstCol - 1, Rpos(ixIO)))
 		End If
 	Next c
 	Rpos(ixIO) = Rpos(ixIO) + 1
@@ -318,8 +331,9 @@ Sub Main
 	Dim oModule, oDlg &apos;Dialog objects
 &apos;	Dim oSheetName &apos;Sheet name prefix
 	Dim oOptionButton1, oOptionButton2
-&apos;	Dim oCell &apos;Cell object
+	Dim oCell &apos;Cell object
 	Dim oRange
+	Dim clear As Boolean
 
 	GlobalInit()
 	IOtypes = Array(&quot;DI&quot;, &quot;AI&quot;, &quot;DO&quot;, &quot;AO&quot;)
@@ -375,20 +389,20 @@ Sub Main
 		Exit Sub
 	End If
 
-	If Overwrite Then  &apos;Delete all existing sheets with the same names
-		For t = 0 To 3
-			If SheetExists(oSheetName.Text &amp; &quot;_&quot; &amp; IOtypes(t)) Then
-				oSheetObj.Sheets.removeByName(oSheetName.Text &amp; &quot;_&quot; &amp; IOtypes(t))
-			End If
-		Next t
-	End If
 	For t = 0 To 3
 		If oCheckBox(t).State = 1 Then
 			Rpos(t) = 1
-			oSheetObj.Sheets.insertNewByName(oSheetName.Text &amp; &quot;_&quot; &amp; IOtypes(t), oSheetObj.Sheets.Count + 1)  &apos;Add new sheets at the end of the document
-			sheetsIO(t) = oSheetObj.Sheets.getByName(oSheetName.Text &amp; &quot;_&quot; &amp; IOtypes(t)) &apos;Make new sheet active
-			oSheetObj.CurrentController.ActiveSheet = sheetsIO(t)
-			ThisComponent.CurrentController.freezeAtPosition(0, 1) &apos;Freeze the first row
+			If SheetExists(oSheetName.Text &amp; &quot;_&quot; &amp; IOtypes(t)) Then
+				clear = True
+			Else
+				oSheetObj.Sheets.insertNewByName(oSheetName.Text &amp; &quot;_&quot; &amp; IOtypes(t), oSheetObj.Sheets.Count + 1)  &apos;Add new sheet at the end of the document
+				clear = False
+			End If
+			sheetsIO(t) = oSheetObj.Sheets.getByName(oSheetName.Text &amp; &quot;_&quot; &amp; IOtypes(t))
+
+			If clear Then  &apos;Clear all cell contents
+				sheetsIO(t).ClearContents(511)	&apos;com.sun.star.sheet.CellFlags
+			End If
 
 			For i = 0 To UBound(ColumnNames(t))
 				oCell = sheetsIO(t).getCellByPosition(i + GfirstCol - 1, 0) &apos;Start from B1
@@ -398,6 +412,8 @@ Sub Main
 		End If
 	Next t
 
+	oSheetObj.lockControllers()
+	&apos;oSheetObj.enableAutomaticCalculation(False)
 	ReadXmlFromUrl(fName) &apos;Second run to fill column data (values of the IO node attributes)
 	&apos;Set optimal width of the columns
 	For t = 3 To 0 Step -1 &apos;Process IO sheets in reverse direction to finish on the first used sheet
@@ -405,8 +421,11 @@ Sub Main
 			oRange = sheetsIO(t).getCellRangeByPosition(1, 0, UBound(ColumnNames(t)) + 1, 0)
 			oRange.Columns.OptimalWidth = True
 			oSheetObj.CurrentController.ActiveSheet = sheetsIO(t)
+			oSheetObj.CurrentController.freezeAtPosition(0, 1) &apos;Freeze the first row
 		End If
 	Next t
+	oSheetObj.unlockControllers()
+	&apos;oSheetObj.enableAutomaticCalculation(True)
 	MsgBox &quot;Import complete!&quot; &amp; CHR$(13) &amp; ConvertFromURL(fName), MB_ICONINFORMATION, MNAME
 End Sub
 

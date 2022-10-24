@@ -443,7 +443,7 @@ End Sub
 
 REM Count number of rows by checking column "B"
 Sub CountRows(oSheet, Rows)
-	Dim r As Integer
+	Dim r As Long
 	Dim sValue As String
 	Rows = 0
 	sValue = Trim(oSheet.getCellByPosition(GfirstCol - 1, 0).string) 'Check cell B1
@@ -601,7 +601,7 @@ Sub PrintDom(oNode, oStream, iLevel As Integer, iIndent As Integer, Optional sIC
 	Dim sLine As String
 	Dim sAtt As String
 	Dim sIndent As String
-	Dim i%, iLen%
+	Dim i As Long, iLen As Long
 	Dim sNodeName As String
 	sNodeName = oNode.getNodeName
 	If IsMissing(sICh) Then
@@ -667,7 +667,7 @@ Function WriteDomToFile(oDOM, sFilePath As String) As Boolean
 	Dim oOutputStream 'Stream returned from SimpleFileAccess
 	Dim oTextOutput 'TextOutputStream service
 	Dim oNodes 'List of child nodes of the root node
-	Dim i%
+	Dim i As Long
 	Dim iIndentLevel As Integer 'Indentation level
 	Dim iIndentSpaces As Integer 'Number of spaces added to each indentation level
 	Dim sFileURL As String
@@ -713,9 +713,9 @@ Sub Main
 	Dim Row() As String				' Text contents of the cells of a row
 	Dim oModule, oDlg				' Dialog object
 	Dim oComboBox(3), oCheckBox(3)	' Dialog elements
-	Dim i As Integer, t As Integer
-	Dim r As Integer, c As Integer
-	Dim Cols As Integer, Rows As Integer 'Number of columns and rows
+	Dim i As Integer, t As Integer, c As Integer
+	Dim r As Long
+	Dim Cols As Integer, Rows As Long 'Number of columns and rows
 	Dim UsedIOs As Integer			' Number of IO sheets to be used
 	Dim oDocBuilder As Object		' DocumentBuilder interface
 	Dim oDocument As Object			' DOM Document object
